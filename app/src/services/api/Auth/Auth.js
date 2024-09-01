@@ -15,8 +15,8 @@ export const login = async (request) => {
 }
 
 export const register = async (request) => {
-
-    const response = await axios.post("http://localhost:8000/api/user/cadastro", request, {
+    console.log(request);
+    const response = await axios.post("http://192.168.1.65:8000/api/user/cadastro", request, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }

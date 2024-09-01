@@ -46,9 +46,10 @@ const FlashMessage = ({ message, alertType = '', onClose }) => {
 
 const styles = StyleSheet.create({
     flash: {
-        width: Dimensions.get('window').width, // Largura total da tela
+        width: '100%', // Largura total da tela
         paddingVertical: 10,
         paddingHorizontal: 20,
+        paddingRight: 20,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',

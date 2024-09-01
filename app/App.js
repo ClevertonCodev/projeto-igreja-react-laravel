@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { authGuard } from './src/services/api/Auth/Authorization';
 import Login from './src/views/Login';
 import Dashboard from './src/views/Dashboard';
-import { authGuard } from './src/services/api/Auth/Authorization';
+import Register from './src/views/Register';
 const Stack = createNativeStackNavigator();
 
 const ProtectedRoute = ({ children }) => {
@@ -13,7 +14,6 @@ const ProtectedRoute = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await authGuard();
-      console.log(token);
       setIsAuthenticated(!!token);
     };
 
@@ -35,6 +35,7 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register} />
         <Stack.Screen
           name="Dashboard"
           component={() => (

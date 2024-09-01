@@ -8,7 +8,6 @@ import { faEyeSlash } from '@fortawesome/free-solid-svg-icons/faEyeSlash';
 import { login } from '../services/api/Auth/Auth';
 import FlashMessage from '../components/FlashMessage';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import token from '../services/api/Auth/GetToken';
 export default function Login({ navigation }) {
     const [email, setEmail] = useState('clevertonsantoscodev@gmail.com');
     const [password, setPassword] = useState('123456');
@@ -74,20 +73,24 @@ export default function Login({ navigation }) {
                         <FontAwesomeIcon icon={faEyeSlash} />
                 }
             />
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-                <Button title="Entrar" onPress={handleLogin} />
-            )}
             <FlashMessage
                 message={error}
                 alertType="erro"
                 withFlash="100"
                 onClose={handleCloseAlert}
             />
+            {loading ? (
+                <ActivityIndicator size="large" color="#fff" />
+            ) : (
+                <Button title="Entrar" onPress={handleLogin} />
+            )}
             <Text style={styles.link}>Esqueci a senha!</Text>
             <Text style={styles.link}>
-                Não tem cadastro? <Text style={styles.linkBold}>Crie uma conta</Text>
+                Não tem cadastro?
+                <Text onPress={() => navigation.navigate('Register')}
+                    style={styles.linkBold}>
+                    Crie uma conta
+                </Text>
             </Text>
         </View>
     );
