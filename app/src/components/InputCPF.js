@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { TextInputMask } from 'react-native-masked-text'; // Importando a biblioteca de máscaras
+import { TextInputMask } from 'react-native-masked-text';
 
-const InputCPF = ({ placeholder, value, onChangeText, onBlur }) => {
+export default function InputCPF({ placeholder, value, onChangeText, onBlur }) {
     return (
         <View style={styles.inputContainer}>
             <TextInputMask
@@ -37,4 +37,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default InputCPF;

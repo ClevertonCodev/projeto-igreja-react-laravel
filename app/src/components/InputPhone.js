@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInputMask } from 'react-native-masked-text'; // Importando a biblioteca de máscaras
 
-const InputPhone = ({ placeholder, value, onChangeText, onBlur }) => {
+export default function InputPhone({ placeholder, value, onChangeText, onBlur }) {
     return (
         <View style={styles.inputContainer}>
             <TextInputMask
@@ -42,4 +42,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default InputPhone;

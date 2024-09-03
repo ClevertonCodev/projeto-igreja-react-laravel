@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-nati
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons/faTimesCircle';
 
-const FlashMessage = ({ message, alertType = '', onClose }) => {
+export default function FlashMessage({ message, alertType = '', onClose }) {
     const [isActive, setIsActive] = useState(false);
 
     useEffect(() => {
@@ -82,4 +82,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default FlashMessage;

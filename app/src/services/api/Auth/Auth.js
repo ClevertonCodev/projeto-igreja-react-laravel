@@ -1,10 +1,13 @@
 import axios from "axios";
 import getToken from "./GetToken"
 import api from "../../AxiosConfig"
+import Constants from 'expo-constants';
+const { extra } = Constants.expoConfig;
+const apiUrl = extra.apiUrl;
 
 export const login = async (request) => {
 
-    const response = await axios.post("http://192.168.1.65:8000/api/login", request, {
+    const response = await axios.post(`${apiUrl}/api/login`, request, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -15,8 +18,7 @@ export const login = async (request) => {
 }
 
 export const register = async (request) => {
-    console.log(request);
-    const response = await axios.post("http://192.168.1.65:8000/api/user/cadastro", request, {
+    const response = await axios.post(`${apiUrl}/api/user/cadastro`, request, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -100,14 +102,6 @@ export const passwordRecovery = async (email) => {
 }
 
 export const passwordResetUpdate = async (request, token) => {
-    // console.log(request.email);
-    // let data = new FormData();
-    // data.append("email", request.email );
-    // data.append("password", request.password);
-    // data.append("password_confirmation", request.confirmePassword);
-    // data.append("token", token);
-    // const response = await axios.post('http://localhost:8000/api/forgot-password/nova-senha', data);
-    // return response.data;
     const data = {
         email: request.email,
         password: request.password,

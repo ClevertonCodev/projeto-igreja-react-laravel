@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 
-const Input = ({ placeholder, value, onChangeText, secureTextEntry, onIconPress, icon }) => {
+export default function Input({ placeholder, value, onChangeText, secureTextEntry, onIconPress, icon, error = null }) {
     return (
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, error ? styles.inputError : null]}>
             <TextInput
                 style={styles.input}
                 placeholder={placeholder}
@@ -43,6 +43,8 @@ const styles = StyleSheet.create({
     icon: {
         marginLeft: 10,
     },
+    inputError: {
+        borderColor: 'red', // Cor da borda em caso de erro
+    },
 });
 
-export default Input;

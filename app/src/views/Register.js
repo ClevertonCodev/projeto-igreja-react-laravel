@@ -71,7 +71,6 @@ export default function Register({ navigation }) {
                             }
                         } catch (error) {
                             setLoading(false);
-                            console.log(error)
                             if (error.response && error.response.status === 422) {
                                 const allErrors = [];
                                 const validationErrors = error.response.data.errors;

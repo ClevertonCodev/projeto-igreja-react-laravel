@@ -8,6 +8,7 @@ const token = async (bearer = null) => {
         }
         return token ? token : null;
     } catch (error) {
+        console.log(error);
         return null;
     }
 }

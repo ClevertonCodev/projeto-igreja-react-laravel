@@ -6,6 +6,8 @@ import { authGuard } from './src/services/api/Auth/Authorization';
 import Login from './src/views/Login';
 import Dashboard from './src/views/Dashboard';
 import Register from './src/views/Register';
+import EstacaForm from './src/views/Estacas/EstacaForm';
+
 const Stack = createNativeStackNavigator();
 
 const ProtectedRoute = ({ children }) => {
@@ -36,14 +38,20 @@ export default function App() {
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen
-          name="Dashboard"
-          component={() => (
+        <Stack.Screen name="Dashboard">
+          {props => (
             <ProtectedRoute>
-              <Dashboard />
+              <Dashboard {...props} />
             </ProtectedRoute>
           )}
-        />
+        </Stack.Screen>
+        <Stack.Screen name="Estacas">
+          {props => (
+            <ProtectedRoute>
+              <EstacaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
