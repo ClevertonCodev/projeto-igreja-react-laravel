@@ -1,79 +1,77 @@
-import React, { useState } from 'react';
-import { TextInput, View, StyleSheet } from 'react-native';
-import FormPage from '../../components/FormPage';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import SearchPage from '../../components/layout/SearchPage';
+import { findAll } from '../../services/api/Estacas';
 
-const FormPage = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-    });
-
-    const [error, setError] = useState(null);
+export default function IndexEstacas() {
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    const [nome, setNome] = useState('');
+    const [endereco, setEndereco] = useState('');
+    const [dataInicial, setDataInicial] = useState('');
+    const [dataFinal, setDataFinal] = useState('');
 
-    const handleInputChange = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+    const getExportParams = () => {
+        const params = {
+            nome: nome,
+            endereco: endereco,
+            data_inicial: dataInicial,
+            data_final: dataFinal,
+        };
+
+        return params;
     };
-
-    const handleSubmit = () => {
+    const fetchData = async () => {
         setLoading(true);
-        setError(null);
-
-        // Simulando uma requisição
-        setTimeout(() => {
-            if (formData.name === '' || formData.email === '') {
-                setError('Todos os campos são obrigatórios');
-            } else {
-                setSuccess(true);
-            }
+        try {
+            const response = await findAll(
+                1,
+                nome,
+                endereco,
+                dataInicial,
+                dataFinal,
+                true,
+            );
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            setError(true);
+        } finally {
             setLoading(false);
-        }, 2000);
+        }
     };
-
-    const handleCloseFlash = () => {
-        setError(null);
-        setSuccess(false);
-    };
+    useEffect(() => {
+        fetchData();
+    }, [nome, endereco, dataInicial, dataFinal]);
 
     return (
-        <FormPage
+        <SearchPage
             error={error}
-            success={success}
-            closeFlash={handleCloseFlash}
-            goSubmit={handleSubmit}
-            loading={loading}
-            title="Cadastro"
+            goSubmit={fetchData}
+            exportExcel={getExportParams()}
+            loader={loading}
+            title="Título da Página"
+            modelName="Estacas"
+            exportingExcel={loading}
         >
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Nome"
-                    value={formData.name}
-                    onChangeText={(value) => handleInputChange('name', value)}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={formData.email}
-                    onChangeText={(value) => handleInputChange('email', value)}
-                />
-            </View>
-        </FormPage>
+            <FlatList
+                data={data}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <View style={styles.itemContainer}>
+                        <Text>{item.name}</Text>
+                    </View>
+                )}
+                ListFooterComponent={loading ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+            />
+        </SearchPage>
     );
-};
+}
 
 const styles = StyleSheet.create({
-    inputContainer: {
-        marginBottom: 20,
-    },
-    input: {
-        height: 40,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 10,
+    itemContainer: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
     },
 });
-
-export default FormPage;

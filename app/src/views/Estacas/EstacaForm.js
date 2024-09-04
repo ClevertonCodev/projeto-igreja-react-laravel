@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
-import FormPage from '../../components/FormPage';
+import FormPage from '../../components/layout/FormPage';
 import Input from '../../components/Input';
 import { create, findId, edit } from "../../services/api/Estacas";
 import * as Yup from 'yup';
+import Pagination from '../../components/Pagination';
 const validationSchema = Yup.object().shape({
     nome: Yup
         .string()
@@ -85,6 +86,11 @@ export default function EstacaForm() {
                         />
                         {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
                     </View>
+                    <Pagination
+                        currentPage={1}
+                        totalPages={5}
+                        onPageChange={5}
+                    />
                 </FormPage>
             )}
         </Formik>

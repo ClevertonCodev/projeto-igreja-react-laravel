@@ -1,14 +1,10 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
-export default function Dashboard({ navigation }) {
+export default function Dashboard() {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Bem-vindo à Dashboard!</Text>
-            <Button
-                title="Ir para Estaca Form"
-                onPress={() => navigation.navigate('Estacas')}
-            />
         </View>
     );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import FlashMessage from './FlashMessage';
-import Button from '../components/Button';
+import FlashMessage from '../FlashMessage';
+import Button from '../Button';
 
 export default function FormPage({ error, success, closeFlash, goSubmit, loading, title, children }) {
 
