@@ -5,7 +5,7 @@ import FormPage from '../../components/layout/FormPage';
 import Input from '../../components/Input';
 import { create, findId, edit } from "../../services/api/Estacas";
 import * as Yup from 'yup';
-import Pagination from '../../components/Pagination';
+import { useRoute } from '@react-navigation/native';
 const validationSchema = Yup.object().shape({
     nome: Yup
         .string()
@@ -15,6 +15,8 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function EstacaForm() {
+    const route = useRoute();
+    const { id } = route.params || {};
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function EstacaForm() {
         setError(null);
         setSuccess(null);
     };
-
+    console.log(id);
     return (
         <Formik
             initialValues={{
@@ -65,7 +67,7 @@ export default function EstacaForm() {
                     closeFlash={handleCloseFlash}
                     goSubmit={handleSubmit}
                     loading={loading}
-                    title="Criar estaca"
+                    title={id ? "editar" : "Criar"}
                 >
                     <View style={styles.form}>
                         <Input
@@ -86,11 +88,6 @@ export default function EstacaForm() {
                         />
                         {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
                     </View>
-                    <Pagination
-                        currentPage={1}
-                        totalPages={5}
-                        onPageChange={5}
-                    />
                 </FormPage>
             )}
         </Formik>

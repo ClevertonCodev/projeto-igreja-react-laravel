@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import api from '../../services/AxiosConfig';
-import * as Sharing from 'expo-sharing'
+import * as Sharing from 'expo-sharing';
 
 export default function SearchPage({
+    data = [],
+    renderItem,
     error = false,
-    goSubmit,
     exportExcel = [],
     loader = false,
-    title = null,
-    children,
     modelName = null,
     exportingExcel = false,
+    msg,
+    children,
 }) {
     const [isExporting, setIsExporting] = useState(exportingExcel);
+    const [footerExpanded, setFooterExpanded] = useState(false); // Controle para expandir o rodapé
 
     const ExcelExport = async () => {
         if (isExporting) return;
@@ -46,37 +48,59 @@ export default function SearchPage({
         }
     };
 
+    const toggleFooter = () => {
+        setFooterExpanded(!footerExpanded);
+    };
+
     return (
         <View style={styles.container}>
-            <View style={styles.cardBody}>
-                <View>
-                    <Button
-                        title="Submit"
-                        onPress={() => goSubmit(true)}
-                    />
+            <ScrollView style={styles.scrollView}>
+                <View style={styles.cardBody}>
+                    <View style={styles.exportButtonContainer}>
+                        <Button
+                            title="Exportar Excel"
+                            onPress={ExcelExport}
+                            disabled={isExporting}
+                        />
+                    </View>
+                    {!loader ? (
+                        <FlatList
+                            data={data}
+                            renderItem={renderItem}
+                            keyExtractor={item => item.id.toString()} // Converte o id em string
+                            style={styles.listContainer}
+                        />
+                    ) : (
+                        <View style={styles.loaderContainer}>
+                            <ActivityIndicator size="large" color="#0000ff" />
+                        </View>
+                    )}
+                    <View style={styles.errorContainer}>
+                        <Text style={[styles.errorText, { opacity: error ? 1 : 0 }]}>
+                            {error && 'Ocorreu um erro!'}
+                        </Text>
+                    </View>
+                    {msg ? (
+                        <View style={styles.errorContainer}>
+                            <Text style={[styles.errorText, { opacity: msg ? 1 : 0 }]}>
+                                {msg}
+                            </Text>
+                        </View>
+                    ) : null}
                 </View>
-                <View style={styles.errorContainer}>
-                    <Text style={[styles.errorText, { opacity: error ? 1 : 0 }]}>
-                        Preencha algum filtro
+            </ScrollView>
+            <TouchableOpacity onPress={toggleFooter} style={styles.footer}>
+                {!footerExpanded && (
+                    <Text style={styles.footerText}>
+                        Mais opções
                     </Text>
-                </View>
-                <View style={styles.exportButtonContainer}>
-                    <Button
-                        title="Exportar Excel"
-                        onPress={ExcelExport}
-                        disabled={isExporting}
-                    />
-                </View>
-                {!loader ? (
-                    <View style={styles.tableContainer}>
+                )}
+                {footerExpanded && (
+                    <View style={styles.expandedContent}>
                         {children}
                     </View>
-                ) : (
-                    <View style={styles.loaderContainer}>
-                        <ActivityIndicator size="large" color="#0000ff" />
-                    </View>
                 )}
-            </View>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -84,28 +108,15 @@ export default function SearchPage({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
         backgroundColor: '#f5f5f5',
     },
-    titulos: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    titleText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
-    link: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    linkText: {
-        marginLeft: 8,
-        color: '#007BFF',
+    scrollView: {
+        flexGrow: 1,
+        padding: 16,
+        overflow: 'scroll'
     },
     cardBody: {
-        backgroundColor: '#fff',
+        backgroundColor: '#00496F',
         padding: 16,
         borderRadius: 8,
         shadowColor: '#000',
@@ -113,14 +124,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 4,
-    },
-    errorContainer: {
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-    errorText: {
-        color: 'red',
-        fontSize: 16,
+        flex: 1,
     },
     exportButtonContainer: {
         flexDirection: 'row',
@@ -133,5 +137,37 @@ const styles = StyleSheet.create({
     loaderContainer: {
         alignItems: 'center',
         marginTop: 16,
+    },
+    errorContainer: {
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 16,
+    },
+    footer: {
+        backgroundColor: '#00496F',
+        padding: 16,
+        alignItems: 'center',
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+    },
+    footerText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    submitButton: {
+        marginTop: 10,
+    },
+    listContainer: {
+        padding: 10,
+        backgroundColor: '#00496F',
+    },
+    expandedContent: {
+        width: '100%', // Garante que a View ocupa toda a largura disponível
+        // padding: 16,
+        alignItems: 'center', // Centraliza os itens horizontalmente
     },
 });

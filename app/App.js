@@ -60,14 +60,14 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
-      <Drawer.Screen name="Estacas">
+      {/* <Drawer.Screen name="Estacas">
         {props => (
           <ProtectedRoute>
             <EstacaForm {...props} />
           </ProtectedRoute>
         )}
-      </Drawer.Screen>
-      <Drawer.Screen name="Estacas Index">
+      </Drawer.Screen> */}
+      <Drawer.Screen name="Estacas">
         {props => (
           <ProtectedRoute>
             <IndexEstacas {...props} />
@@ -91,6 +91,13 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Dashboard" component={DrawerNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name='Estaca'>
+          {props => (
+            <ProtectedRoute>
+              <EstacaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
