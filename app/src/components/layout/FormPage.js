@@ -43,7 +43,7 @@ export default function FormPage({ error, success, closeFlash, goSubmit, loading
                             </View>
                         </View>
                     ) : (
-                        <ActivityIndicator size="large" color="#0000ff" />
+                        <ActivityIndicator size="large" color="#00496F" />
                     )}
                 </View>
             </View>

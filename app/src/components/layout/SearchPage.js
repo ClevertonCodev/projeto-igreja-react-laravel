@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, ScrollView, TouchableOpacity, FlatList, Button } from 'react-native';
+// import Button from '../Button';
 import * as FileSystem from 'expo-file-system';
 import api from '../../services/AxiosConfig';
 import * as Sharing from 'expo-sharing';
@@ -14,6 +15,8 @@ export default function SearchPage({
     exportingExcel = false,
     msg,
     children,
+    navigation,
+    title,
 }) {
     const [isExporting, setIsExporting] = useState(exportingExcel);
     const [footerExpanded, setFooterExpanded] = useState(false); // Controle para expandir o rodapé
@@ -52,13 +55,22 @@ export default function SearchPage({
         setFooterExpanded(!footerExpanded);
     };
 
+    const handlenNavigate = () => {
+        navigation.navigate(title)
+    }
     return (
         <View style={styles.container}>
             <ScrollView style={styles.scrollView}>
                 <View style={styles.cardBody}>
                     <View style={styles.exportButtonContainer}>
                         <Button
+                            title="Adicionar"
+                            onPress={handlenNavigate}
+
+                        />
+                        <Button
                             title="Exportar Excel"
+                            color="#1fd295"
                             onPress={ExcelExport}
                             disabled={isExporting}
                         />
@@ -67,12 +79,12 @@ export default function SearchPage({
                         <FlatList
                             data={data}
                             renderItem={renderItem}
-                            keyExtractor={item => item.id.toString()} // Converte o id em string
+                            keyExtractor={item => item.id.toString()}
                             style={styles.listContainer}
                         />
                     ) : (
                         <View style={styles.loaderContainer}>
-                            <ActivityIndicator size="large" color="#0000ff" />
+                            <ActivityIndicator size="large" color="#fff" />
                         </View>
                     )}
                     <View style={styles.errorContainer}>
@@ -128,8 +140,9 @@ const styles = StyleSheet.create({
     },
     exportButtonContainer: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         marginBottom: 16,
+        padding: 10
     },
     tableContainer: {
         marginTop: 16,
@@ -166,8 +179,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#00496F',
     },
     expandedContent: {
-        width: '100%', // Garante que a View ocupa toda a largura disponível
-        // padding: 16,
-        alignItems: 'center', // Centraliza os itens horizontalmente
+        width: '100%',
+        alignItems: 'center',
     },
 });
