@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Button from '../../components/Button';
+import Input from '../../components/Input';
+import InputDate from '../../components/InputDate';
 import SearchPage from '../../components/layout/SearchPage';
-import { findAll } from '../../services/api/Estacas';
+import { findAll, destroy } from '../../services/api/Estacas';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons/faTrashAlt';
-import Input from '../../components/Input';
+import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import 'moment/locale/pt-br';
 moment.locale('pt-br');
@@ -47,7 +50,6 @@ export default function IndexEstacas({ navigation }) {
             }
 
         } catch (error) {
-            console.log(error);
             setError(true);
         } finally {
             if (data && data.length == 0) {
@@ -59,10 +61,11 @@ export default function IndexEstacas({ navigation }) {
         }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, [nome, endereco, dataInicial, dataFinal]);
-
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [nome, endereco, dataInicial, dataFinal])
+    );
     useEffect(() => {
         if (data && data.length === 0) {
             setMessage('Nenhum dado encontrado.');
@@ -71,17 +74,30 @@ export default function IndexEstacas({ navigation }) {
         }
     }, [data]);
 
-    const handleDelete = (id) => {
-        // Função chamada quando o ícone de deletar for clicado
-        console.log(`Item com ID ${id} deletado`);
+    const handleDelete = async (id) => {
+        try {
+            setLoading(true);
+            await destroy(id);
+            fetchData();
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        }
     };
-
+    const handleClearFilter = () => {
+        setError('');
+        setNome('');
+        setEndereco('');
+        setDataInicial('');
+        setDataFinal('');
+    }
     const handleClick = (id) => {
         navigation.navigate('Estaca', { id });
-        console.log(`Item com ID ${id} clicado`);
     };
 
-    // Função para renderizar cada item da lista
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.itemContainer}
@@ -100,7 +116,7 @@ export default function IndexEstacas({ navigation }) {
                     onPress={() => handleDelete(item.id)}
                     style={styles.deleteIconContainer}
                 >
-                    <FontAwesomeIcon icon={faTrashAlt} />
+                    <FontAwesomeIcon icon={faTrashAlt} color='red' />
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
@@ -117,6 +133,8 @@ export default function IndexEstacas({ navigation }) {
             msg={msg}
             data={data}
             renderItem={renderItem}
+            navigation={navigation}
+            title='Estaca'
         >
             <Input
                 placeholder="Nome da estaca"
@@ -128,6 +146,19 @@ export default function IndexEstacas({ navigation }) {
                 value={endereco}
                 onChangeText={setEndereco}
             />
+            <InputDate
+                value={dataInicial}
+                placeholder="Seleciona a data inicial"
+                onChange={(newDate) => setDataInicial(newDate)}
+            />
+            <InputDate
+                value={dataFinal}
+                placeholder="Seleciona a data final"
+                onChange={(newDate) => setDataFinal(newDate)}
+            />
+            <View style={styles.buttonContainer}>
+                <Button title="Limpar fitros" onPress={handleClearFilter} color="#1fd295" />
+            </View>
         </SearchPage>
     );
 };
@@ -152,7 +183,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 5, // Adiciona espaço entre as linhas
+        marginBottom: 5,
     },
     primaryText: {
         fontWeight: 'bold',
@@ -180,4 +211,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#333',
     },
+    buttonContainer: {
+        width: 200
+    }
 });

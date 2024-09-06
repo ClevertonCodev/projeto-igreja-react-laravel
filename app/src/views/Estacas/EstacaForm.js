@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
 import FormPage from '../../components/layout/FormPage';
@@ -6,6 +6,8 @@ import Input from '../../components/Input';
 import { create, findId, edit } from "../../services/api/Estacas";
 import * as Yup from 'yup';
 import { useRoute } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+
 const validationSchema = Yup.object().shape({
     nome: Yup
         .string()
@@ -20,11 +22,91 @@ export default function EstacaForm() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
+
     const handleCloseFlash = () => {
         setError(null);
         setSuccess(null);
     };
-    console.log(id);
+
+    const getOne = async (id, setValues) => {
+        setLoading(true);
+        try {
+            const response = await findId(id);
+            setValues({
+                nome: response.estaca.nome,
+                endereco: response.estaca.endereco,
+            });
+        } catch (error) {
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const update = async (id, values, resetForm) => {
+        try {
+            const response = await edit(id, values);
+            if (response.success) {
+                setSuccess('Editado com sucesso!');
+                resetForm();
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const created = async (values, resetForm) => {
+        try {
+            const response = await create(values);
+            if (response.success) {
+                setSuccess('Criado com sucesso!');
+                resetForm();
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Formik
             initialValues={{
@@ -35,61 +117,53 @@ export default function EstacaForm() {
             onSubmit={async (values, { resetForm }) => {
                 setLoading(true);
                 setError(null);
-                try {
-                    const response = await create(values);
-                    if (response.success) {
-                        setSuccess('Criado com sucesso!');
-                        resetForm();
-                    }
-                } catch (error) {
-                    if (error.response && error.response.status === 422) {
-                        const allErrors = [];
-                        const validationErrors = error.response.data.errors;
-
-                        Object.keys(validationErrors).forEach(key => {
-                            allErrors.push(...validationErrors[key]);
-                        });
-                        setError(allErrors.join(', '));
-                    } else if (error.response && error.response.data && error.response.data.error) {
-                        setError(error.response.data.error);
-                    } else {
-                        setError("Ocorreu um erro desconhecido.");
-                    }
-                } finally {
-                    setLoading(false);
+                if (id) {
+                    await update(id, values, resetForm);
+                } else {
+                    await created(values, resetForm);
                 }
             }}
         >
-            {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-                <FormPage
-                    error={error}
-                    success={success}
-                    closeFlash={handleCloseFlash}
-                    goSubmit={handleSubmit}
-                    loading={loading}
-                    title={id ? "editar" : "Criar"}
-                >
-                    <View style={styles.form}>
-                        <Input
-                            placeholder="Nome da estaca"
-                            value={values.nome}
-                            onChangeText={handleChange('nome')}
-                            onBlur={handleBlur('nome')}
-                            error={errors.nome}
-                        />
-                        {touched.nome && errors.nome && <Text style={styles.error}>{errors.nome}</Text>}
+            {({ handleChange, handleBlur, handleSubmit, setValues, values, errors, touched }) => {
+                useFocusEffect(
+                    useCallback(() => {
+                        if (id) {
+                            getOne(id, setValues);
+                        }
+                    }, [id])
+                );
 
-                        <Input
-                            placeholder="Endereço"
-                            value={values.endereco}
-                            onChangeText={handleChange('endereco')}
-                            onBlur={handleBlur('endereco')}
-                            error={errors.endereco}
-                        />
-                        {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
-                    </View>
-                </FormPage>
-            )}
+                return (
+                    <FormPage
+                        error={error}
+                        success={success}
+                        closeFlash={handleCloseFlash}
+                        goSubmit={handleSubmit}
+                        loading={loading}
+                        title={id ? "Editar" : "Criar"}
+                    >
+                        <View style={styles.form}>
+                            <Input
+                                placeholder="Nome da estaca"
+                                value={values.nome}
+                                onChangeText={handleChange('nome')}
+                                onBlur={handleBlur('nome')}
+                                error={errors.nome}
+                            />
+                            {touched.nome && errors.nome && <Text style={styles.error}>{errors.nome}</Text>}
+
+                            <Input
+                                placeholder="Endereço"
+                                value={values.endereco}
+                                onChangeText={handleChange('endereco')}
+                                onBlur={handleBlur('endereco')}
+                                error={errors.endereco}
+                            />
+                            {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
+                        </View>
+                    </FormPage>
+                );
+            }}
         </Formik>
     );
 }

@@ -8,11 +8,7 @@ export const create = async (request) => {
 };
 
 export const edit = async (id, request) => {
-    const data = {
-        nome: request.name,
-        endereco: request.address
-    }
-    const response = await api.put(`/estacas/${id}`, data);
+    const response = await api.put(`/estacas/${id}`, request);
     return response.data;
 };
 
