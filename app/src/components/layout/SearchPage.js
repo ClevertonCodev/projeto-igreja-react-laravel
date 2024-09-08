@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert, ScrollView, TouchableOpacity, FlatList, Button } from 'react-native';
-// import Button from '../Button';
+import FlashMessage from '../FlashMessage';
 import * as FileSystem from 'expo-file-system';
 import api from '../../services/AxiosConfig';
 import * as Sharing from 'expo-sharing';
@@ -17,6 +17,7 @@ export default function SearchPage({
     children,
     navigation,
     title,
+    closeFlash
 }) {
     const [isExporting, setIsExporting] = useState(exportingExcel);
     const [footerExpanded, setFooterExpanded] = useState(false); // Controle para expandir o rodapé
@@ -58,9 +59,13 @@ export default function SearchPage({
     const handlenNavigate = () => {
         navigation.navigate(title)
     }
+    const handleCloseAlert = () => {
+        if (closeFlash) closeFlash();
+    }
+
     return (
         <View style={styles.container}>
-            <ScrollView style={styles.scrollView}>
+            <View style={styles.scrollView}>
                 <View style={styles.cardBody}>
                     <View style={styles.exportButtonContainer}>
                         <Button
@@ -88,19 +93,25 @@ export default function SearchPage({
                         </View>
                     )}
                     <View style={styles.errorContainer}>
-                        <Text style={[styles.errorText, { opacity: error ? 1 : 0 }]}>
-                            {error && 'Ocorreu um erro!'}
-                        </Text>
+                        {error && (
+                            <FlashMessage
+                                message={error}
+                                alertType="erro"
+                                onClose={handleCloseAlert}
+                            />
+                        )}
                     </View>
                     {msg ? (
                         <View style={styles.errorContainer}>
-                            <Text style={[styles.errorText, { opacity: msg ? 1 : 0 }]}>
-                                {msg}
-                            </Text>
+                            <FlashMessage
+                                message={msg}
+                                alertType="warning"
+                                onClose={handleCloseAlert}
+                            />
                         </View>
                     ) : null}
                 </View>
-            </ScrollView>
+            </View>
             <TouchableOpacity onPress={toggleFooter} style={styles.footer}>
                 {!footerExpanded && (
                     <Text style={styles.footerText}>

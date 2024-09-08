@@ -9,7 +9,8 @@ import Dashboard from './src/views/Dashboard';
 import Register from './src/views/Register';
 import EstacaForm from './src/views/estacas/EstacaForm';
 import IndexEstacas from './src/views/estacas/IndexEstacas';
-
+import AlaForm from './src/views/alas/AlasForm';
+import Alas from './src/views/alas/IndexAlas';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 const background = '#00496F';
@@ -60,13 +61,13 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
-      {/* <Drawer.Screen name="Estacas">
+      <Drawer.Screen name="Alas">
         {props => (
           <ProtectedRoute>
-            <EstacaForm {...props} />
+            <Alas {...props} />
           </ProtectedRoute>
         )}
-      </Drawer.Screen> */}
+      </Drawer.Screen>
       <Drawer.Screen name="Estacas">
         {props => (
           <ProtectedRoute>
@@ -95,6 +96,13 @@ export default function App() {
           {props => (
             <ProtectedRoute>
               <EstacaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name='Ala'>
+          {props => (
+            <ProtectedRoute>
+              <AlaForm {...props} />
             </ProtectedRoute>
           )}
         </Stack.Screen>

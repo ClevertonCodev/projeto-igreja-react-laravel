@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Formik } from 'formik';
 import FormPage from '../../components/layout/FormPage';
 import Input from '../../components/Input';
-import { create, findId, edit } from "../../services/api/Estacas";
+import InputSelect from '../../components/InputSelect';
+import { Formik } from 'formik';
+import { create, findId, edit } from "../../services/api/Alas";
+import { findAll } from "../../services/api/Estacas";
 import * as Yup from 'yup';
 import { useRoute } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +16,7 @@ const validationSchema = Yup.object().shape({
         .required("O nome é obrigatório")
         .matches(/^[A-Za-z ]+$/, 'O nome não deve conter números'),
     endereco: Yup.string().required('O endereço é obrigatório'),
+    estaca_id: Yup.string().required("Informar a estaca é obrigatório"),
 });
 
 export default function EstacaForm({ navigation }) {
@@ -22,6 +25,33 @@ export default function EstacaForm({ navigation }) {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [estacas, setEstacas] = useState([]);
+    const request = {
+        nome: '',
+        endereco: '',
+        estaca_id: '',
+    };
+
+    const options = useCallback(() => {
+        return estacas.map((item) => ({
+            value: item.id,
+            label: item.nome,
+        }));
+    }, [estacas]);
+
+    const getEstacas = async () => {
+        setLoading(true);
+        try {
+            const response = await findAll();
+            if (response.estacas) {
+                setEstacas(response.estacas);
+            }
+        } catch (error) {
+            setError('Ocorreu um erro desconhecido ao carregar as estacas.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleCloseFlash = () => {
         setError(null);
@@ -32,24 +62,9 @@ export default function EstacaForm({ navigation }) {
         setLoading(true);
         try {
             const response = await findId(id);
-            setValues({
-                nome: response.estaca.nome,
-                endereco: response.estaca.endereco,
-            });
+            setValues(response.ala);
         } catch (error) {
-            if (error.response && error.response.status === 422) {
-                const allErrors = [];
-                const validationErrors = error.response.data.errors;
-
-                Object.keys(validationErrors).forEach(key => {
-                    allErrors.push(...validationErrors[key]);
-                });
-                setError(allErrors.join(', '));
-            } else if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError("Ocorreu um erro desconhecido.");
-            }
+            setError("Ocorreu um erro ao buscar os dados.");
         } finally {
             setLoading(false);
         }
@@ -65,19 +80,7 @@ export default function EstacaForm({ navigation }) {
                 }, 1500);
             }
         } catch (error) {
-            if (error.response && error.response.status === 422) {
-                const allErrors = [];
-                const validationErrors = error.response.data.errors;
-
-                Object.keys(validationErrors).forEach(key => {
-                    allErrors.push(...validationErrors[key]);
-                });
-                setError(allErrors.join(', '));
-            } else if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError("Ocorreu um erro desconhecido.");
-            }
+            setError("Erro ao editar.");
         } finally {
             setLoading(false);
         }
@@ -91,19 +94,7 @@ export default function EstacaForm({ navigation }) {
                 resetForm();
             }
         } catch (error) {
-            if (error.response && error.response.status === 422) {
-                const allErrors = [];
-                const validationErrors = error.response.data.errors;
-
-                Object.keys(validationErrors).forEach(key => {
-                    allErrors.push(...validationErrors[key]);
-                });
-                setError(allErrors.join(', '));
-            } else if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError("Ocorreu um erro desconhecido.");
-            }
+            setError("Erro ao criar.");
         } finally {
             setLoading(false);
         }
@@ -111,10 +102,7 @@ export default function EstacaForm({ navigation }) {
 
     return (
         <Formik
-            initialValues={{
-                nome: '',
-                endereco: '',
-            }}
+            initialValues={request}
             validationSchema={validationSchema}
             onSubmit={async (values, { resetForm }) => {
                 setLoading(true);
@@ -129,6 +117,7 @@ export default function EstacaForm({ navigation }) {
             {({ handleChange, handleBlur, handleSubmit, setValues, values, errors, touched }) => {
                 useFocusEffect(
                     useCallback(() => {
+                        getEstacas();
                         if (id) {
                             getOne(id, setValues);
                         }
@@ -146,7 +135,7 @@ export default function EstacaForm({ navigation }) {
                     >
                         <View style={styles.form}>
                             <Input
-                                placeholder="Nome da estaca"
+                                placeholder="Nome da ala"
                                 value={values.nome}
                                 onChangeText={handleChange('nome')}
                                 onBlur={handleBlur('nome')}
@@ -162,6 +151,17 @@ export default function EstacaForm({ navigation }) {
                                 error={errors.endereco}
                             />
                             {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
+
+                            <InputSelect
+                                placeholder="Selecione a estaca"
+                                value={values.estaca_id}
+                                onValueChange={(itemValue) => {
+                                    setValues({ ...values, estaca_id: itemValue });
+                                }}
+                                items={options()}
+                                error={errors.estaca_id}
+                            />
+                            {touched.estaca_id && errors.estaca_id && <Text style={styles.error}>{errors.estaca_id}</Text>}
                         </View>
                     </FormPage>
                 );
@@ -169,16 +169,10 @@ export default function EstacaForm({ navigation }) {
         </Formik>
     );
 }
+
 const styles = StyleSheet.create({
-    inputContainer: {
-        marginBottom: 20,
-    },
-    input: {
-        height: 40,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 10,
+    form: {
+        paddingHorizontal: 16,
     },
     error: {
         color: 'red',
@@ -186,4 +180,3 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
 });
-

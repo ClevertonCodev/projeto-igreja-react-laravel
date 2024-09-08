@@ -4,7 +4,9 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputDate from '../../components/InputDate';
 import SearchPage from '../../components/layout/SearchPage';
-import { findAll, destroy } from '../../services/api/Estacas';
+import InputSelect from '../../components/InputSelect';
+import { findAll, destroy } from '../../services/api/Alas';
+import { findAll as findAllEstacas } from "../../services/api/Estacas";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons/faTrashAlt';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,17 +23,40 @@ export default function IndexEstacas({ navigation }) {
     const [dataInicial, setDataInicial] = useState('');
     const [dataFinal, setDataFinal] = useState('');
     const [msg, setMessage] = useState('');
+    const [estaca, setEstaca] = useState('');
+    const [estacas, setEstacas] = useState([]);
 
     const getExportParams = () => {
         const params = {
             nome: nome,
             endereco: endereco,
+            estaca_id: estaca,
             data_inicial: dataInicial,
             data_final: dataFinal,
         };
 
         return params;
     };
+    const getEstacas = async () => {
+        setLoading(true);
+        try {
+            const response = await findAllEstacas();
+            if (response.estacas) {
+                setEstacas(response.estacas);
+            }
+        } catch (error) {
+            setError('Ocorreu um erro desconhecido ao carregar as estacas.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const options = useCallback(() => {
+        return estacas.map((item) => ({
+            value: item.id,
+            label: item.nome,
+        }));
+    }, [estacas]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -41,12 +66,13 @@ export default function IndexEstacas({ navigation }) {
                 1,
                 nome,
                 endereco,
+                estaca,
                 dataInicial,
                 dataFinal,
                 true,
             );
-            if (response.estacas) {
-                setData(response.estacas);
+            if (response.alas) {
+                setData(response.alas);
             }
 
         } catch (error) {
@@ -61,12 +87,23 @@ export default function IndexEstacas({ navigation }) {
         }
     };
 
+    const formatAlas = (alas) => {
+        if (!alas || alas.length === 0) {
+            return [];
+        }
+
+        return alas.map((ala) => ({
+            ...ala,
+            id: ala.ala_id,
+        }));
+    }
     useFocusEffect(
         useCallback(() => {
             fetchData();
-        }, [nome, endereco, dataInicial, dataFinal])
+        }, [nome, endereco, dataInicial, dataFinal, estaca])
     );
     useEffect(() => {
+        getEstacas();
         if (data && data.length === 0) {
             setMessage('Nenhum dado cadastrado.');
         } else {
@@ -93,9 +130,10 @@ export default function IndexEstacas({ navigation }) {
         setEndereco('');
         setDataInicial('');
         setDataFinal('');
+        setEstaca('');
     }
     const handleClick = (id) => {
-        navigation.navigate('Estaca', { id });
+        navigation.navigate('Ala', { id });
     };
 
     const handleCloseFlash = () => {
@@ -112,6 +150,9 @@ export default function IndexEstacas({ navigation }) {
                 <Text style={styles.dateText}>
                     {moment(item.created_at).format('DD/MM/YYYY')}
                 </Text>
+            </View>
+            <View style={styles.row}>
+                <Text style={styles.secondaryText}> <Text style={styles.primaryText}>Estaca:</Text> {item.estaca_nome}</Text>
             </View>
 
             <View style={styles.row}>
@@ -132,17 +173,17 @@ export default function IndexEstacas({ navigation }) {
             goSubmit={fetchData}
             exportExcel={getExportParams()}
             loader={loading}
-            modelName="Estacas"
+            modelName="Alas"
             exportingExcel={loading}
             msg={msg}
-            data={data}
+            data={formatAlas(data)}
             renderItem={renderItem}
             navigation={navigation}
-            title='Estaca'
+            title='Ala'
             closeFlash={handleCloseFlash}
         >
             <Input
-                placeholder="Nome da estaca"
+                placeholder="Nome da Alas"
                 value={nome}
                 onChangeText={setNome}
             />
@@ -151,6 +192,15 @@ export default function IndexEstacas({ navigation }) {
                 value={endereco}
                 onChangeText={setEndereco}
             />
+            <View style={{ width: 350 }}>
+                <InputSelect
+                    placeholder="Selecione a estaca"
+                    value={estaca}
+                    onValueChange={(itemValue) => setEstaca(itemValue)}
+                    items={options()}
+                />
+            </View>
+
             <InputDate
                 value={dataInicial}
                 placeholder="Seleciona a data inicial"
