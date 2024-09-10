@@ -3,20 +3,18 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
 import FormPage from '../../components/layout/FormPage';
 import Input from '../../components/Input';
-import { create, findId, edit } from "../../services/api/Estacas";
+import { create, findId, edit } from "../../services/api/TiposVeiculos";
 import * as Yup from 'yup';
 import { useRoute } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 
 const validationSchema = Yup.object().shape({
-    nome: Yup
+    tipo: Yup
         .string()
-        .required("O nome é obrigatório")
-        .matches(/^[A-Za-z ]+$/, 'O nome não deve conter números'),
-    endereco: Yup.string().required('O endereço é obrigatório'),
+        .required("O tipo é obrigatório"),
 });
 
-export default function EstacaForm({ navigation }) {
+export default function TipoVForm({ navigation }) {
     const route = useRoute();
     const { id } = route.params || {};
     const [error, setError] = useState(null);
@@ -33,8 +31,7 @@ export default function EstacaForm({ navigation }) {
         try {
             const response = await findId(id);
             setValues({
-                nome: response.estaca.nome,
-                endereco: response.estaca.endereco,
+                tipo: response.veiculo.tipo
             });
         } catch (error) {
             if (error.response && error.response.status === 422) {
@@ -55,13 +52,13 @@ export default function EstacaForm({ navigation }) {
         }
     };
 
-    const update = async (id, values, resetForm) => {
+    const update = async (id, values) => {
         try {
             const response = await edit(id, values);
             if (response.success) {
                 setSuccess('Editado com sucesso!');
                 setTimeout(() => {
-                    navigation.navigate('Estacas');
+                    navigation.navigate('Tipo veículos');
                 }, 1500);
             }
         } catch (error) {
@@ -112,15 +109,14 @@ export default function EstacaForm({ navigation }) {
     return (
         <Formik
             initialValues={{
-                nome: '',
-                endereco: '',
+                tipo: '',
             }}
             validationSchema={validationSchema}
             onSubmit={async (values, { resetForm }) => {
                 setLoading(true);
                 setError(null);
                 if (id) {
-                    await update(id, values, resetForm);
+                    await update(id, values);
                 } else {
                     await created(values, resetForm);
                 }
@@ -146,22 +142,13 @@ export default function EstacaForm({ navigation }) {
                     >
                         <View style={styles.form}>
                             <Input
-                                placeholder="Nome da estaca"
-                                value={values.nome}
-                                onChangeText={handleChange('nome')}
-                                onBlur={handleBlur('nome')}
-                                error={errors.nome}
+                                placeholder="Tipo veiculo"
+                                value={values.tipo}
+                                onChangeText={handleChange('tipo')}
+                                onBlur={handleBlur('tipo')}
+                                error={errors.tipo}
                             />
-                            {touched.nome && errors.nome && <Text style={styles.error}>{errors.nome}</Text>}
-
-                            <Input
-                                placeholder="Endereço"
-                                value={values.endereco}
-                                onChangeText={handleChange('endereco')}
-                                onBlur={handleBlur('endereco')}
-                                error={errors.endereco}
-                            />
-                            {touched.endereco && errors.endereco && <Text style={styles.error}>{errors.endereco}</Text>}
+                            {touched.tipo && errors.tipo && <Text style={styles.error}>{errors.tipo}</Text>}
                         </View>
                     </FormPage>
                 );

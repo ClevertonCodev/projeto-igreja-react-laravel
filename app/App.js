@@ -11,6 +11,8 @@ import EstacaForm from './src/views/estacas/EstacaForm';
 import IndexEstacas from './src/views/estacas/IndexEstacas';
 import AlaForm from './src/views/alas/AlasForm';
 import Alas from './src/views/alas/IndexAlas';
+import Tipos from './src/views/tipo-veiculos/IndexTipoV';
+import TipoForm from './src/views/tipo-veiculos/TipoVForm';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 const background = '#00496F';
@@ -61,6 +63,13 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
+      <Drawer.Screen name="Estacas">
+        {props => (
+          <ProtectedRoute>
+            <IndexEstacas {...props} />
+          </ProtectedRoute>
+        )}
+      </Drawer.Screen>
       <Drawer.Screen name="Alas">
         {props => (
           <ProtectedRoute>
@@ -68,10 +77,10 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
-      <Drawer.Screen name="Estacas">
+      <Drawer.Screen name="Tipos veículos">
         {props => (
           <ProtectedRoute>
-            <IndexEstacas {...props} />
+            <Tipos {...props} />
           </ProtectedRoute>
         )}
       </Drawer.Screen>
@@ -103,6 +112,13 @@ export default function App() {
           {props => (
             <ProtectedRoute>
               <AlaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name='Tipo veículo'>
+          {props => (
+            <ProtectedRoute>
+              <TipoForm {...props} />
             </ProtectedRoute>
           )}
         </Stack.Screen>
