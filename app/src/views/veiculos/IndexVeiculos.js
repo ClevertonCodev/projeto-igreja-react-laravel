@@ -5,8 +5,8 @@ import Input from '../../components/Input';
 import InputDate from '../../components/InputDate';
 import SearchPage from '../../components/layout/SearchPage';
 import InputSelect from '../../components/InputSelect';
-import { findAll, destroy } from '../../services/api/Alas';
-import { findAll as findAllEstacas } from "../../services/api/Estacas";
+import { findAll, destroy } from '../../services/api/Veiculos';
+import { findAll as findAllTiposV } from "../../services/api/TiposVeiculos";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons/faTrashAlt';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,49 +14,49 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 moment.locale('pt-br');
 
-export default function IndexAlas({ navigation }) {
+export default function IndexVeiculos({ navigation }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [nome, setNome] = useState('');
-    const [endereco, setEndereco] = useState('');
+    const [quantidadeLugares, setQuantidadeLugares] = useState('');
     const [dataInicial, setDataInicial] = useState('');
     const [dataFinal, setDataFinal] = useState('');
     const [msg, setMessage] = useState('');
-    const [estaca, setEstaca] = useState('');
-    const [estacas, setEstacas] = useState([]);
+    const [tipo, setTipoV] = useState('');
+    const [tipos, setTiposV] = useState([]);
 
     const getExportParams = () => {
         const params = {
             nome: nome,
-            endereco: endereco,
-            estaca_id: estaca,
+            quantidade_lugares: quantidadeLugares,
+            tipo_veiculo_id: tipo,
             data_inicial: dataInicial,
             data_final: dataFinal,
         };
 
         return params;
     };
-    const getEstacas = async () => {
+    const getTiposV = async () => {
         setLoading(true);
         try {
-            const response = await findAllEstacas();
-            if (response.estacas) {
-                setEstacas(response.estacas);
+            const response = await findAllTiposV();
+            if (response.tipo_veiculos) {
+                setTiposV(response.tipo_veiculos);
             }
         } catch (error) {
-            setError('Ocorreu um erro desconhecido ao carregar as estacas.');
+            setError('Ocorreu um erro desconhecido ao carregar os tipos de veículos.');
         } finally {
             setLoading(false);
         }
     };
 
     const options = useCallback(() => {
-        return estacas.map((item) => ({
+        return tipos.map((item) => ({
             value: item.id,
-            label: item.nome,
+            label: item.tipo,
         }));
-    }, [estacas]);
+    }, [tipos]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -65,14 +65,14 @@ export default function IndexAlas({ navigation }) {
             const response = await findAll(
                 1,
                 nome,
-                endereco,
-                estaca,
+                quantidadeLugares,
+                tipo,
                 dataInicial,
                 dataFinal,
                 true,
             );
-            if (response.alas) {
-                setData(response.alas);
+            if (response.veiculos) {
+                setData(response.veiculos);
             }
 
         } catch (error) {
@@ -87,23 +87,23 @@ export default function IndexAlas({ navigation }) {
         }
     };
 
-    const formatAlas = (alas) => {
-        if (!alas || alas.length === 0) {
+    const formatData = (Veiculos) => {
+        if (!Veiculos || Veiculos.length === 0) {
             return [];
         }
 
-        return alas.map((ala) => ({
-            ...ala,
-            id: ala.ala_id,
+        return Veiculos.map((veiculo) => ({
+            ...veiculo,
+            id: veiculo.veiculo_id,
         }));
     }
     useFocusEffect(
         useCallback(() => {
             fetchData();
-        }, [nome, endereco, dataInicial, dataFinal, estaca])
+        }, [nome, quantidadeLugares, dataInicial, dataFinal, tipo])
     );
     useEffect(() => {
-        getEstacas();
+        getTiposV();
         if (data && data.length === 0) {
             setMessage('Nenhum dado cadastrado.');
         } else {
@@ -127,13 +127,13 @@ export default function IndexAlas({ navigation }) {
     const handleClearFilter = () => {
         setError('');
         setNome('');
-        setEndereco('');
+        setQuantidadeLugares('');
         setDataInicial('');
         setDataFinal('');
-        setEstaca('');
+        setTipoV('');
     }
     const handleClick = (id) => {
-        navigation.navigate('Ala', { id });
+        navigation.navigate('Veículo', { id });
     };
 
     const handleCloseFlash = () => {
@@ -152,11 +152,11 @@ export default function IndexAlas({ navigation }) {
                 </Text>
             </View>
             <View style={styles.row}>
-                <Text style={styles.secondaryText}> <Text style={styles.primaryText}>Estaca:</Text> {item.estaca_nome}</Text>
+                <Text style={styles.secondaryText}> <Text style={styles.primaryText}>Tipo veículo:</Text> {item.tipo_veiculo_nome}</Text>
             </View>
 
             <View style={styles.row}>
-                <Text style={styles.secondaryText}>{item.endereco}</Text>
+                <Text style={styles.secondaryText}><Text style={styles.primaryText}>Quantidade de lugares:</Text> {item.quantidade_lugares}</Text>
                 <TouchableOpacity
                     onPress={() => handleDelete(item.id)}
                     style={styles.deleteIconContainer}
@@ -173,34 +173,33 @@ export default function IndexAlas({ navigation }) {
             goSubmit={fetchData}
             exportExcel={getExportParams()}
             loader={loading}
-            modelName="Alas"
+            modelName="Veiculos"
             exportingExcel={loading}
             msg={msg}
-            data={formatAlas(data)}
+            data={formatData(data)}
             renderItem={renderItem}
             navigation={navigation}
-            title='Ala'
+            title='Veículo'
             closeFlash={handleCloseFlash}
         >
             <Input
-                placeholder="Nome da Alas"
+                placeholder="Nome do veículo"
                 value={nome}
                 onChangeText={setNome}
             />
             <Input
-                placeholder="Endereço"
-                value={endereco}
-                onChangeText={setEndereco}
+                placeholder="Quantidade de lugares"
+                value={quantidadeLugares}
+                onChangeText={setQuantidadeLugares}
             />
             <View style={{ width: 350 }}>
                 <InputSelect
-                    placeholder="Selecione a estaca"
-                    value={estaca}
-                    onValueChange={(itemValue) => setEstaca(itemValue)}
+                    placeholder="Selecione o tipo do veículo"
+                    value={tipo}
+                    onValueChange={(itemValue) => setTipoV(itemValue)}
                     items={options()}
                 />
             </View>
-
             <InputDate
                 value={dataInicial}
                 placeholder="Seleciona a data inicial"

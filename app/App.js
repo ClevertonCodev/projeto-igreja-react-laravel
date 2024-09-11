@@ -13,6 +13,9 @@ import AlaForm from './src/views/alas/AlasForm';
 import Alas from './src/views/alas/IndexAlas';
 import Tipos from './src/views/tipo-veiculos/IndexTipoV';
 import TipoForm from './src/views/tipo-veiculos/TipoVForm';
+import VeiculoForm from './src/views/veiculos/VeiculoForm';
+import IndexVeiculos from './src/views/veiculos/IndexVeiculos';
+
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 const background = '#00496F';
@@ -84,6 +87,13 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
+      <Drawer.Screen name="Veículos">
+        {props => (
+          <ProtectedRoute>
+            <IndexVeiculos {...props} />
+          </ProtectedRoute>
+        )}
+      </Drawer.Screen>
     </Drawer.Navigator>
   );
 };
@@ -119,6 +129,13 @@ export default function App() {
           {props => (
             <ProtectedRoute>
               <TipoForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name='Veículo'>
+          {props => (
+            <ProtectedRoute>
+              <VeiculoForm {...props} />
             </ProtectedRoute>
           )}
         </Stack.Screen>
