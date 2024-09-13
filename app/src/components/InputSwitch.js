@@ -1,56 +1,55 @@
-// import React, { useState } from 'react';
-// import { View, Switch, StyleSheet, Text } from 'react-native';
-// import Icon from 'react-native-vector-icons/FontAwesome'; // Biblioteca para ícones
+import React from 'react';
+import { View, Switch, StyleSheet, Text } from 'react-native';
 
-// const CustomSwitch = () => {
-//     const [isEnabled, setIsEnabled] = useState(false);
+const InputSwitch = ({ value, onValueChange, label = '', disabled = false }) => {
+    const isSwitchOn = value === 1;
+    const handleValueChange = (newValue) => {
+        onValueChange(newValue ? 1 : 0);
+    };
 
-//     const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+    return (
+        <View style={styles.container}>
+            <Text style={styles.label}>{label}</Text>
+            <View style={styles.switchRow}>
+                <Switch
+                    trackColor={{ false: '#767577', true: '#4CD964' }}
+                    thumbColor={isSwitchOn ? '#fff' : '#f4f3f4'}
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={handleValueChange}
+                    value={isSwitchOn}
+                    disabled={disabled}
+                    style={styles.switch}
+                />
+                <Text style={styles.statusText}>{isSwitchOn ? 'Ativo' : 'Desativado'}</Text>
+            </View>
+        </View>
+    );
+};
 
-//     return (
-//         <View style={styles.container}>
-//             <View style={styles.switchContainer}>
-//                 <Switch
-//                     trackColor={{ false: '#767577', true: '#4CD964' }} // Cor de fundo (verde quando ligado)
-//                     thumbColor={isEnabled ? '#fff' : '#f4f3f4'} // Cor do botão (branco)
-//                     ios_backgroundColor="#3e3e3e" // Cor de fundo no iOS quando desligado
-//                     onValueChange={toggleSwitch}
-//                     value={isEnabled}
-//                     style={styles.switch}
-//                 />
-//                 {isEnabled && (
-//                     <View style={styles.iconContainer}>
-//                         <Icon name="check" size={12} color="#4CD964" />
-//                     </View>
-//                 )}
-//             </View>
-//         </View>
-//     );
-// };
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center', // Centraliza verticalmente
+        alignItems: 'center', // Centraliza horizontalmente
+    },
+    switchRow: {
+        flexDirection: 'row', // Alinha os elementos em uma linha
+        alignItems: 'center', // Centraliza verticalmente
+    },
+    label: {
+        marginBottom: 10, // Adiciona espaçamento abaixo do rótulo
+        fontSize: 16,
+        textAlign: 'center', // Centraliza o texto do rótulo
+    },
+    switch: {
+        transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }],
+    },
+    statusText: {
+        marginLeft: 10, // Espaçamento entre o switch e o texto
+        fontSize: 16,
+    },
+});
 
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//     },
-//     switchContainer: {
-//         position: 'relative',
-//     },
-//     switch: {
-//         transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }], // Aumentar o tamanho do switch
-//     },
-//     iconContainer: {
-//         position: 'absolute',
-//         right: 10, // Ajusta a posição do ícone
-//         top: 10,
-//         backgroundColor: '#fff',
-//         borderRadius: 50,
-//         width: 20,
-//         height: 20,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//     },
-// });
+export default InputSwitch;
 
-// export default CustomSwitch;
+
