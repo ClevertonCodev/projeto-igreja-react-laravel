@@ -4,13 +4,14 @@ import FormPage from '../../components/layout/FormPage';
 import Input from '../../components/Input';
 import InputSelect from '../../components/InputSelect';
 import InputDateTime from '../../components/inputDateTime';
+import InputSwitch from '../../components/InputSwitch';
 import { Formik } from 'formik';
 import { create, findId, edit } from "../../services/api/Caravanas";
 import { findAll } from "../../services/api/Estacas";
 import * as Yup from 'yup';
 import { useRoute } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-
+import moment from 'moment';
 const validationSchema = Yup.object().shape({
     nome: Yup
         .string()
@@ -36,7 +37,7 @@ export default function CaravanaForm({ navigation }) {
         quantidade_passageiros: '',
         data_hora_partida: '',
         data_hora_retorno: '',
-        status: true,
+        status: 1,
         estaca_id: '',
     };
 
@@ -47,12 +48,12 @@ export default function CaravanaForm({ navigation }) {
         }));
     }, [estacas]);
 
-    const getestacas = async () => {
+    const getEstacas = async () => {
         setLoading(true);
         try {
             const response = await findAll();
-            if (response.tipo_veiculos) {
-                setEstacas(response.tipo_veiculos);
+            if (response.estacas) {
+                setEstacas(response.estacas);
             }
         } catch (error) {
             setError('Ocorreu um erro desconhecido ao carregar os tipos de veículos');
@@ -102,6 +103,7 @@ export default function CaravanaForm({ navigation }) {
                 resetForm();
             }
         } catch (error) {
+            console.log(error);
             setError("Erro ao criar.");
         } finally {
             setLoading(false);
@@ -115,17 +117,23 @@ export default function CaravanaForm({ navigation }) {
             onSubmit={async (values, { resetForm }) => {
                 setLoading(true);
                 setError(null);
+                const formattedValues = {
+                    ...values,
+                    data_hora_partida: moment(values.data_hora_partida).format('YYYY-MM-DD HH:mm:ss'),
+                    data_hora_retorno: moment(values.data_hora_retorno).format('YYYY-MM-DD HH:mm:ss')
+                };
+                console.log(formattedValues);
                 if (id) {
-                    await update(id, values);
+                    await update(id, formattedValues);
                 } else {
-                    await created(values, resetForm);
+                    await created(formattedValues, resetForm);
                 }
             }}
         >
             {({ handleChange, handleBlur, handleSubmit, setValues, values, errors, touched }) => {
                 useFocusEffect(
                     useCallback(() => {
-                        getestacas();
+                        getEstacas();
                         if (id) {
                             getOne(id, setValues);
                         }
@@ -178,7 +186,6 @@ export default function CaravanaForm({ navigation }) {
                             />
                             {touched.data_hora_partida && errors.data_hora_partida && <Text style={styles.error}>{errors.data_hora_partida}</Text>}
 
-                            {/* Campo de Data e Hora de Retorno */}
                             <InputDateTime
                                 placeholder="Data e hora de retorno"
                                 value={values.data_hora_retorno}
@@ -186,6 +193,23 @@ export default function CaravanaForm({ navigation }) {
                                 error={touched.data_hora_retorno && errors.data_hora_retorno}
                             />
                             {touched.data_hora_retorno && errors.data_hora_retorno && <Text style={styles.error}>{errors.data_hora_retorno}</Text>}
+
+                            <InputSelect
+                                placeholder="Selecione a estaca"
+                                value={values.estaca_id}
+                                onValueChange={(itemValue) => {
+                                    setValues({ ...values, estaca_id: itemValue });
+                                }}
+                                items={options()}
+                                error={errors.estaca_id}
+                            />
+                            {touched.estaca_id && errors.estaca_id && <Text style={styles.error}>{errors.estaca_id}</Text>}
+
+                            <InputSwitch
+                                value={values.status}
+                                onValueChange={(newValue) => setValues({ ...values, status: newValue })}
+                                label='Status da caravana'
+                            />
                         </View>
                     </FormPage>
                 );
