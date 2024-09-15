@@ -16,6 +16,7 @@ import TipoForm from './src/views/tipo-veiculos/TipoVForm';
 import VeiculoForm from './src/views/veiculos/VeiculoForm';
 import IndexVeiculos from './src/views/veiculos/IndexVeiculos';
 import CaravanaForm from './src/views/caravanas/CaravanasForm';
+import { logout } from './src/services/api/Auth/Auth';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -102,6 +103,14 @@ const DrawerNavigator = () => {
           </ProtectedRoute>
         )}
       </Drawer.Screen>
+      <Drawer.Screen
+        name="Sair"
+        options={{ drawerLabel: 'Sair' }}
+        component={({ navigation }) => {
+          logout(navigation);
+          return null;
+        }}
+      />
     </Drawer.Navigator>
   );
 };
@@ -147,6 +156,13 @@ export default function App() {
             </ProtectedRoute>
           )}
         </Stack.Screen>
+        <Drawer.Screen name="Caravana">
+          {props => (
+            <ProtectedRoute>
+              <CaravanaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Drawer.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
