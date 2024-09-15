@@ -49,3 +49,13 @@ export const destroy = async (id) => {
     const response = await api.delete(`/delete/veiculos-caravana/${id}`);
     return response.data;
 };
+
+export const getVehiclesOfCaravan = async (id) => {
+    const response = await api.get(`/caravanas-veiculos/caravana/${id}`);
+    return response.data;
+};
+
+export const getfreeVehicles = async (id) => {
+    const response = await api.get(`caravana/${id}/veiculos-livres`);
+    return response.data;
+};

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Caravanas;
 use App\Models\CaravanasVeiculos;
+use App\Models\TipoVeiculos;
 use App\Models\Veiculos;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
@@ -105,8 +106,8 @@ class CaravanasRepository extends Repository
 
         $vehiclesAvailable = [];
 
-        foreach ($vehicles as $vehicle) {
-
+        foreach ($vehicles as &$vehicle) {
+             $vehicle['tipo_veiculo'] = TipoVeiculos::find($vehicle->tipo_veiculo_id);
             $caravanVehicles = CaravanasVeiculos::where('veiculo_id', $vehicle->id)->get();
 
             $caravansValid = [];

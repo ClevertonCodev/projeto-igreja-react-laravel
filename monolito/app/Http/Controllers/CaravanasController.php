@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CaravanasRequest;
 use App\Repositories\CaravanasRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class CaravanasController extends Controller
@@ -36,8 +37,11 @@ class CaravanasController extends Controller
             $caravan = $this->caravansRepository->create($request->all());
             return response()->json(['success' => $caravan], Response::HTTP_CREATED);
         } catch (\LogicException $e) {
+            Log::error('LogicException: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => $e->getMessage()],  $e->getCode());
         } catch (\Exception $e) {
+            
+            Log::error('Exception: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -123,4 +127,6 @@ class CaravanasController extends Controller
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    
 }

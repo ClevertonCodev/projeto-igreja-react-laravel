@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Button as Botao } from 'react-native';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputDate from '../../components/InputDate';
 import SearchPage from '../../components/layout/SearchPage';
 import InputSelect from '../../components/InputSelect';
-import InputSwitch from '../../components/InputSwitch';
 import { findAll, destroy } from '../../services/api/Caravanas';
 import { findAll as findAllEstacas } from "../../services/api/Estacas";
 import { findAll as findAllveiculos } from "../../services/api/Veiculos";
@@ -47,7 +46,6 @@ export default function IndexCaravanas({ navigation }) {
         return params;
     };
 
-    console.log(getExportParams());
     const getEstacas = async () => {
         setLoading(true);
         try {
@@ -180,7 +178,9 @@ export default function IndexCaravanas({ navigation }) {
     const handleCloseFlash = () => {
         setError('');
     };
-
+    const handleClickVeiculos = (id) => {
+        navigation.navigate('Veiculos Caravanas', { id });
+    }
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.itemContainer}
@@ -195,9 +195,11 @@ export default function IndexCaravanas({ navigation }) {
             <View style={styles.row}>
                 <Text style={styles.secondaryText}> <Text style={styles.primaryText}>Estaca:</Text> {item.estacas.nome}</Text>
             </View>
-
             <View style={styles.row}>
                 <Text style={styles.secondaryText}> <Text style={styles.primaryText}>Destino:</Text> {item.destino}</Text>
+            </View>
+            <View style={styles.row}>
+                <Botao title="Ver veiculos" onPress={() => handleClickVeiculos(item.id)} />
                 <TouchableOpacity
                     onPress={() => handleDelete(item.id)}
                     style={styles.deleteIconContainer}
@@ -228,11 +230,13 @@ export default function IndexCaravanas({ navigation }) {
                 value={nome}
                 onChangeText={setNome}
             />
+
             <Input
                 placeholder="Destino"
                 value={destino}
                 onChangeText={setDestino}
             />
+
             <View style={{ width: 350 }}>
                 <InputSelect
                     placeholder="Selecione a estaca"

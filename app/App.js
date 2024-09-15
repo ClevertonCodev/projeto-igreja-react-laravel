@@ -17,6 +17,7 @@ import VeiculoForm from './src/views/veiculos/VeiculoForm';
 import IndexVeiculos from './src/views/veiculos/IndexVeiculos';
 import CaravanaForm from './src/views/caravanas/CaravanasForm';
 import IndexCaravanas from './src/views/caravanas/indexCaravanas';
+import VeiculosCaravanasLista from './src/views/veiculos-caravanas/VeiculosCaravanasLista';
 import { logout } from './src/services/api/Auth/Auth';
 
 const Stack = createNativeStackNavigator();
@@ -161,6 +162,13 @@ export default function App() {
           {props => (
             <ProtectedRoute>
               <CaravanaForm {...props} />
+            </ProtectedRoute>
+          )}
+        </Drawer.Screen>
+        <Drawer.Screen name="Veiculos Caravanas">
+          {props => (
+            <ProtectedRoute>
+              <VeiculosCaravanasLista {...props} />
             </ProtectedRoute>
           )}
         </Drawer.Screen>
