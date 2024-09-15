@@ -21,7 +21,6 @@ class AlasController extends Controller
     public function index(Request $request)
     {
         try {
-            // dd($request->query());
             $alas = $this->alasRepository->findAllPagination($request->query());
             return  response()->json(['alas' => $alas], Response::HTTP_OK);
         } catch (\Exception $e) {

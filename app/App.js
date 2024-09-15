@@ -16,6 +16,7 @@ import TipoForm from './src/views/tipo-veiculos/TipoVForm';
 import VeiculoForm from './src/views/veiculos/VeiculoForm';
 import IndexVeiculos from './src/views/veiculos/IndexVeiculos';
 import CaravanaForm from './src/views/caravanas/CaravanasForm';
+import IndexCaravanas from './src/views/caravanas/indexCaravanas';
 import { logout } from './src/services/api/Auth/Auth';
 
 const Stack = createNativeStackNavigator();
@@ -99,7 +100,7 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="Caravanas">
         {props => (
           <ProtectedRoute>
-            <CaravanaForm {...props} />
+            <IndexCaravanas {...props} />
           </ProtectedRoute>
         )}
       </Drawer.Screen>

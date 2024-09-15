@@ -41,6 +41,22 @@ export default function CaravanaForm({ navigation }) {
         estaca_id: '',
     };
 
+    getErros = (error) => {
+        if (error.response && error.response.status === 422) {
+            const allErrors = [];
+            const validationErrors = error.response.data.errors;
+
+            Object.keys(validationErrors).forEach(key => {
+                allErrors.push(...validationErrors[key]);
+            });
+            setError(allErrors.join(', '));
+        } else if (error.response && error.response.data && error.response.data.error) {
+            setError(error.response.data.error);
+        } else {
+            setError("Ocorreu um erro desconhecido.");
+        }
+    }
+
     const options = useCallback(() => {
         return estacas.map((item) => ({
             value: item.id,
@@ -56,7 +72,7 @@ export default function CaravanaForm({ navigation }) {
                 setEstacas(response.estacas);
             }
         } catch (error) {
-            setError('Ocorreu um erro desconhecido ao carregar os tipos de veículos');
+            setError('Ocorreu um erro desconhecido ao carregar as estacas');
         } finally {
             setLoading(false);
         }
@@ -73,7 +89,7 @@ export default function CaravanaForm({ navigation }) {
             const response = await findId(id);
             setValues(response.caravana);
         } catch (error) {
-            setError("Ocorreu um erro ao buscar os dados.");
+            getErros(error);
         } finally {
             setLoading(false);
         }
@@ -85,11 +101,11 @@ export default function CaravanaForm({ navigation }) {
             if (response.success) {
                 setSuccess('Editado com sucesso!');
                 setTimeout(() => {
-                    navigation.navigate('Veículos');
+                    navigation.navigate('Caravanas');
                 }, 1500);
             }
         } catch (error) {
-            setError("Erro ao editar.");
+            getErros(error);
         } finally {
             setLoading(false);
         }
@@ -103,8 +119,7 @@ export default function CaravanaForm({ navigation }) {
                 resetForm();
             }
         } catch (error) {
-            console.log(error);
-            setError("Erro ao criar.");
+            getErros(error);
         } finally {
             setLoading(false);
         }
@@ -122,7 +137,6 @@ export default function CaravanaForm({ navigation }) {
                     data_hora_partida: moment(values.data_hora_partida).format('YYYY-MM-DD HH:mm:ss'),
                     data_hora_retorno: moment(values.data_hora_retorno).format('YYYY-MM-DD HH:mm:ss')
                 };
-                console.log(formattedValues);
                 if (id) {
                     await update(id, formattedValues);
                 } else {
@@ -167,10 +181,9 @@ export default function CaravanaForm({ navigation }) {
                                 error={errors.destino}
                             />
                             {touched.destino && errors.destino && <Text style={styles.error}>{errors.destino}</Text>}
-
                             <Input
                                 placeholder="Quantidade de passageiros"
-                                value={values.quantidade_passageiros}
+                                value={String(values.quantidade_passageiros)}
                                 keyboardType="numeric"
                                 onChangeText={handleChange('quantidade_passageiros')}
                                 onBlur={handleBlur('quantidade_passageiros')}

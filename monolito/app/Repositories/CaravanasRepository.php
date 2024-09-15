@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class CaravanasRepository extends Repository
 {
@@ -27,7 +28,7 @@ class CaravanasRepository extends Repository
     public function findAllPagination(array $params, bool $excel = false): Collection|LengthAwarePaginator
     {
         $query = $this->model::with(['estacas', 'veiculos.tipoVeiculos']);
-
+        Log::error('Exception', ['exception' => $params['status']]);
         $conditions = [
             'nome' => fn ($query, $value) => $query->where('nome', 'like', "%$value%"),
             'quantidade_passageiros' => fn ($query, $value) => $query->where('quantidade_passageiros', 'like', "%$value%"),
@@ -37,15 +38,20 @@ class CaravanasRepository extends Repository
             'veiculo_id' => function ($query, $value) {
                 $query->whereHas('veiculos', fn ($query) => $query->where('veiculos.id', $value));
             },
-            'data_inicial' => function ($query, $value) use ($params) {
-                $initialDate = Carbon::parse($value)->startOfDay()->utc();
-                $finalDate = Carbon::parse($params['data_final'])->endOfDay()->utc();
-                $query->whereBetween('created_at', [$initialDate, $finalDate]);
+            'data_inicial' => function ($query) use ($params) {
+                $initialDate = Carbon::parse($params['data_inicial'])->startOfDay();
+                $query->whereDate('data_hora_partida', '=', $initialDate);
             },
-        ];
+            'data_final' => function ($query) use ($params) {
+                $finalDate = Carbon::parse($params['data_final'])->endOfDay();
+                $query->whereDate('data_hora_retorno', '=', $finalDate);
+            },
 
+        ];
+        
         foreach ($params as $param => $value) {
-            if (array_key_exists($param, $conditions)) {
+    
+            if (!empty($value) && array_key_exists($param, $conditions)) {
                 call_user_func($conditions[$param],$query, $value);
             }
         }

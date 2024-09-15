@@ -35,7 +35,7 @@ export const findAll = async (
             nome: nome,
             quantidade_passageiros: quantidadePassageiros,
             status: status,
-            destino: destino,
+            destino: destino ? 1 : 0,
             estaca_id: estacaId,
             data_inicial: data_inicial,
             data_final: data_final,
@@ -46,6 +46,6 @@ export const findAll = async (
 };
 
 export const destroy = async (id) => {
-    const response = await api.delete(`/caravanas/${id}`);
+    const response = await api.delete(`/delete/veiculos-caravana/${id}`);
     return response.data;
 };

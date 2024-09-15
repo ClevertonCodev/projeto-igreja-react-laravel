@@ -2,6 +2,7 @@ import axios from "axios";
 import getToken from "./GetToken"
 import api from "../../AxiosConfig"
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 const { extra } = Constants.expoConfig;
 const apiUrl = extra.apiUrl;
 
@@ -28,50 +29,23 @@ export const register = async (request) => {
     return response.data
 }
 
-export const refreshToken = async () => {
-
-    const token = getToken(true);
-    try {
-        if (token) {
-            const response = await axios.post('http://localhost:8000/api/refresh', {},
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token
-                    }
-                }
-            );
-
-            if (response.status === 200) {
-                localStorage.removeItem('access_token');
-                localStorage.setItem('access_token', response.data.access_token);
-            }
-            return response.data.token;
-
-        } else {
-            localStorage.removeItem('access_token');
-            return window.location.href = '/';
-        }
-    } catch (error) {
-        if (error.response && error.response.status === 500) {
-            await logout();
-        }
-    }
-}
-
-export const logout = async () => {
+export const logout = async (navigation) => {
 
     try {
         const response = await api.post('/logout');
 
         if (response.status === 200) {
-            localStorage.removeItem('access_token');
-            return window.location.href = '/';
+            await AsyncStorage.removeItem('access_token');
+            navigation.navigate('Login');
         }
 
     } catch (error) {
-        localStorage.removeItem('access_token');
-        return window.location.href = '/';
+        await AsyncStorage.removeItem('access_token');
+        navigation.navigate('Login');
+    } finally {
+        if (await getToken()) {
+            navigation.navigate('Login');
+        }
     }
 
 }
@@ -97,7 +71,7 @@ export const validadeEmailAndCPF = async (request) => {
 export const passwordRecovery = async (email) => {
     let data = new FormData();
     data.append("email", email);
-    const response = await axios.post('http://localhost:8000/api/forgot-password/senha-email-recuperacao', data);
+    const response = await axios.post(`${apiUrl}/api/forgot-password/senha-email-recuperacao`, data);
     return response.data;
 }
 
@@ -113,7 +87,7 @@ export const passwordResetUpdate = async (request, token) => {
         'Content-Type': 'application/json'
     };
 
-    const response = await axios.put('http://localhost:8000/api/forgot-password/nova-senha', data, { headers });
+    const response = await axios.put(`${apiUrl}/api/forgot-password/nova-senha`, data, { headers });
     return response.data;
 }
 

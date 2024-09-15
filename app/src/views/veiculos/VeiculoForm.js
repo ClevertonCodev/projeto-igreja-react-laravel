@@ -80,7 +80,19 @@ export default function VeiculoForm({ navigation }) {
                 }, 1500);
             }
         } catch (error) {
-            setError("Erro ao editar.");
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoading(false);
         }
@@ -94,7 +106,19 @@ export default function VeiculoForm({ navigation }) {
                 resetForm();
             }
         } catch (error) {
-            setError("Erro ao criar.");
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoading(false);
         }

@@ -64,7 +64,19 @@ export default function EstacaForm({ navigation }) {
             const response = await findId(id);
             setValues(response.ala);
         } catch (error) {
-            setError("Ocorreu um erro ao buscar os dados.");
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoading(false);
         }
@@ -80,7 +92,19 @@ export default function EstacaForm({ navigation }) {
                 }, 1500);
             }
         } catch (error) {
-            setError("Erro ao editar.");
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoading(false);
         }
@@ -94,7 +118,19 @@ export default function EstacaForm({ navigation }) {
                 resetForm();
             }
         } catch (error) {
-            setError("Erro ao criar.");
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoading(false);
         }
