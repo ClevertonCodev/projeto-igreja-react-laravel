@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Button, FlatList, ActivityIndicator, Modal } from 'react-native';
 import FlashMessage from '../../components/FlashMessage';
-import { getVehiclesOfCaravan, getfreeVehicles } from '../../services/api/Caravanas';
+import { getVehiclesOfCaravan, getfreeVehicles, addVeiculoOfCaravan, destroyVehiclesOfCaravan } from '../../services/api/Caravanas';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons/faTrashAlt';
 import { useFocusEffect } from '@react-navigation/native';
@@ -24,7 +24,7 @@ export default function VeiculosCaravanasLista({ navigation }) {
 
     const fetchData = async (id) => {
         setLoading(true);
-        setError(false);
+        setError('');
         try {
             const response = await getVehiclesOfCaravan(id);
             if (response.caravanas_veiculos) {
@@ -75,7 +75,19 @@ export default function VeiculosCaravanasLista({ navigation }) {
             setDataModal(response.veiculos_livres);
             setModalVisible(true);
         } catch (error) {
-            console.log(error);
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
+
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
         } finally {
             setLoadingModal(false);
         }
@@ -90,9 +102,44 @@ export default function VeiculosCaravanasLista({ navigation }) {
             setSelecionado(veiculosSelecionado.filter(item => item !== id));
         }
     };
+    const handleDelete = async (veiculoId, caravanaId) => {
+        try {
+            setLoading(true);
+            await destroyVehiclesOfCaravan(veiculoId, caravanaId);
+            fetchData(id);
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        }
+    };
+    const addVeiculoCaravana = async (request) => {
+        try {
+            setLoadingModal(true);
+            await addVeiculoOfCaravan(id, request)
+        } catch (error) {
+            if (error.response && error.response.status === 422) {
+                const allErrors = [];
+                const validationErrors = error.response.data.errors;
 
-    const handlerClickVeiculos = () => {
-        navigation.navigate('Veículo')
+                Object.keys(validationErrors).forEach(key => {
+                    allErrors.push(...validationErrors[key]);
+                });
+                setError(allErrors.join(', '));
+            } else if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError("Ocorreu um erro desconhecido.");
+            }
+        } finally {
+            fetchData(id);
+            setLoadingModal(true);
+            setSelecionado([]);
+            setModalVisible(false);
+        }
+
     }
     const renderItem = ({ item }) => {
         return (
@@ -110,9 +157,14 @@ export default function VeiculosCaravanasLista({ navigation }) {
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.secondaryText}>
-                                <Text style={styles.primaryText}>Destino:</Text> {veiculo.quantidade_lugares}
+                                <Text style={styles.primaryText}>Lugares:</Text> {veiculo.quantidade_lugares}
                             </Text>
-
+                            <TouchableOpacity
+                                onPress={() => handleDelete(veiculo.id, veiculo.pivot.caravana_id)}
+                                style={styles.deleteIconContainer}
+                            >
+                                <FontAwesomeIcon icon={faTrashAlt} color='red' />
+                            </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
                 ))}
@@ -159,12 +211,15 @@ export default function VeiculosCaravanasLista({ navigation }) {
                 <Button title="Adicionar Veículos" onPress={getVeiculosLivres} />
             </View>
             {!loading ? (
-                <FlatList
-                    data={data}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.id.toString()}
-                    style={styles.listContainer}
-                />
+                <View style={styles.containerListBody}>
+                    <FlatList
+                        data={data}
+                        renderItem={renderItem}
+                        keyExtractor={item => item.id.toString()}
+                        style={styles.listContainer}
+                        contentContainerStyle={{ flexGrow: 1 }}
+                    />
+                </View>
             ) : (
                 <View style={styles.loaderContainer}>
                     <ActivityIndicator size="large" color="#fff" />
@@ -179,7 +234,15 @@ export default function VeiculosCaravanasLista({ navigation }) {
                     />
                 </View>
             ) : null}
-
+            {error ? (
+                <View style={{ marginTop: 10 }}>
+                    <FlashMessage
+                        message={error}
+                        alertType="error"
+                        onClose={handleCloseAlert}
+                    />
+                </View>
+            ) : null}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -206,7 +269,7 @@ export default function VeiculosCaravanasLista({ navigation }) {
                                 <Button title="Criar novo veículo" onPress={() => handlerClickVeiculos()} />
                             </View>
                             <View style={{ marginTop: 10 }}>
-                                <Button title="Cadastrar veículo na caravana" onPress={() => handlerClickVeiculos()} />
+                                <Button title="Cadastrar veículo na caravana" onPress={() => addVeiculoCaravana(veiculosSelecionado)} />
                             </View>
                         </View>
 
@@ -237,6 +300,10 @@ const styles = StyleSheet.create({
     },
     containerList: {
         maxHeight: '70%'
+    },
+    containerListBody: {
+        maxHeight: '90%',
+        padding: 5,
     },
     modalTitle: {
         fontSize: 20,

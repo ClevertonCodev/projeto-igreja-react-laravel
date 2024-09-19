@@ -127,6 +127,4 @@ class CaravanasController extends Controller
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-    
 }

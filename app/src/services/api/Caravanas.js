@@ -59,3 +59,13 @@ export const getfreeVehicles = async (id) => {
     const response = await api.get(`caravana/${id}/veiculos-livres`);
     return response.data;
 };
+
+export const addVeiculoOfCaravan = async (id, request) => {
+    const response = await api.post(`/caravana/${id}/adicionar-veiculos`, { veiculos: request });
+    return response.data;
+};
+
+export const destroyVehiclesOfCaravan = async (id, caravanaId) => {
+    const response = await api.delete(`/veiculos/remove_caravanas_veiculos/${id}/${caravanaId}`);
+    return response.data;
+};

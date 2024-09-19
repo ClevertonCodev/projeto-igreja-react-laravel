@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Calculation\Database\DMax;
 
 class CaravanasRepository extends Repository
 {
@@ -98,7 +99,7 @@ class CaravanasRepository extends Repository
      */
     public function caravansHaveFreeVehicles(int $id): array
     {
-
+       
         $caravan = $this->findById($id, true);
         $dateTimeMatch = $caravan->data_hora_partida;
         $dateTimeReturn = $caravan->data_hora_retorno;
@@ -113,7 +114,10 @@ class CaravanasRepository extends Repository
             $caravansValid = [];
 
             foreach ($caravanVehicles as $cv) {
-
+            
+                if ($cv->caravana_id == $id) {
+                    continue 2;
+                }
                 $caravan = $this->findById($cv->caravana_id);
 
                 if (
@@ -124,7 +128,9 @@ class CaravanasRepository extends Repository
                 ) {
                     $caravansValid[] = $caravan;
                 }
+
             }
+
             if (count($caravansValid) == 0) {
                 $vehiclesAvailable[] = $vehicle;
             }
@@ -143,25 +149,24 @@ class CaravanasRepository extends Repository
      * @throws \LogicException Algo deu errado verifique a disponibilidade dos veículos e tente novamente com código 404
      * @return bool
      */
-    public function addVehiclesCaravan(int $id, ?string $vehicles): bool
+    public function addVehiclesCaravan(int $id, array $vehicles): bool
     {
         if (empty($vehicles)) {
-            throw new \LogicException('Veiculo não processável', 422);
+            throw new \LogicException('Veículo não processável', 422);
         }
 
         $caravan = $this->findById($id);
-        $vehicles = explode(',', $vehicles);
         $conflicts = collect();
-        $registerVehicle   = [];
+        $registerVehicles = []; // Armazenará todos os veículos para anexar depois
 
         foreach ($vehicles as $vehicleId) {
-
             $vehicle = Veiculos::find($vehicleId);
 
             if (empty($vehicle)) {
                 continue;
             }
 
+            // Verificar conflitos de horários com outras caravanas
             $caravansConflicts = $vehicle->caravanas()
                 ->where('data_hora_retorno', '>', $caravan->data_hora_partida)
                 ->where('data_hora_partida', '<', $caravan->data_hora_retorno)
@@ -171,27 +176,37 @@ class CaravanasRepository extends Repository
                 $conflicts = $conflicts->merge($caravansConflicts);
             }
 
-            $registerVehicle = $vehicle;
+            // Armazenar o veículo para anexar mais tarde
+            $registerVehicles[] = $vehicle->id; // Usar o ID do veículo
         }
 
+        // Se houver conflitos, lançar exceção
         if ($conflicts->count() > 0) {
             throw new \LogicException('Um ou mais veículos estão em uso durante o mesmo intervalo de tempo', 404);
         }
 
-        $caravan->veiculos()->attach($registerVehicle);
-        $vehiclesCaravan  = $caravan->load('veiculos')->toArray();
+        // Anexar todos os veículos de uma vez
+        $caravan->veiculos()->attach($registerVehicles);
 
+        // Verificar se todos os veículos foram anexados corretamente
+        $vehiclesCaravan = $caravan->load('veiculos')->toArray();
         foreach ($vehicles as $vehicleId) {
+            $found = false;
             foreach ($vehiclesCaravan['veiculos'] as $vehicle) {
                 if ($vehicle['id'] == $vehicleId) {
-                    return true;
+                    $found = true;
                     break;
                 }
             }
+
+            if (!$found) {
+                throw new \LogicException("Algo deu errado. Verifique a disponibilidade dos veículos e tente novamente", 404);
+            }
         }
 
-        throw new \LogicException("Algo deu errado verifique a disponibilidade dos's' veiculo's' e tente novamente", 404);
+        return true; // Retorna verdadeiro se tudo estiver certo
     }
+
     /**
      * Deleta os veículos de uma caravana pelo seu ID.
      *
