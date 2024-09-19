@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CaravanasVeiculos;
+use App\Models\CaravanasParticipante;
 use Illuminate\Http\Request;
 
-class CaravanasVeiculosController extends Controller
+class CaravanasParticipanteController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -34,7 +34,7 @@ class CaravanasVeiculosController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CaravanasVeiculos $caravanasVeiculos)
+    public function show(CaravanasParticipante $caravanasParticipante)
     {
         //
     }
@@ -42,7 +42,7 @@ class CaravanasVeiculosController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(CaravanasVeiculos $caravanasVeiculos)
+    public function edit(CaravanasParticipante $caravanasParticipante)
     {
         //
     }
@@ -50,7 +50,7 @@ class CaravanasVeiculosController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CaravanasVeiculos $caravanasVeiculos)
+    public function update(Request $request, CaravanasParticipante $caravanasParticipante)
     {
         //
     }
@@ -58,7 +58,7 @@ class CaravanasVeiculosController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CaravanasVeiculos $caravanasVeiculos)
+    public function destroy(CaravanasParticipante $caravanasParticipante)
     {
         //
     }
