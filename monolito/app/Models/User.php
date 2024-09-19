@@ -37,6 +37,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->belongsTo(Alas::class);
     }
 
+    public function caravanas()
+    {
+        return $this->belongsToMany(Caravanas::class, CaravanasParticipante::class, 'caravana_id', 'user_id')->withPivot('funcao', 'status', 'data_confirmacao');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

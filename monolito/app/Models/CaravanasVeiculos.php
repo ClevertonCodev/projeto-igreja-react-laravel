@@ -12,15 +12,4 @@ class CaravanasVeiculos extends Model
 
     protected $fillable = ['caravana_id', 'veiculo_id'];
 
-    public function rules(){
-        return  [
-        'veiculo_id' => Rule::unique('caravanas_veiculos')->ignore($this->id)
-        ];
-    }
-
-    public function feedback(){
-        return [
-            'veiculo_id.unique' => 'Esse veiculo está em uso',
-        ];
-    }
 }

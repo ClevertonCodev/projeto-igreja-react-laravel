@@ -29,4 +29,9 @@ class Caravanas extends Model
     {
         return $this->belongsToMany(Veiculos::class, CaravanasVeiculos::class, 'caravana_id', 'veiculo_id');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, CaravanasParticipante::class, 'caravana_id', 'user_id')->withPivot('funcao', 'status', 'data_confirmacao');
+    }
 }
