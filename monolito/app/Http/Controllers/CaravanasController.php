@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CaravanasParticipantesRequest;
 use App\Http\Requests\CaravanasRequest;
 use App\Repositories\CaravanasRepository;
 use Illuminate\Http\Request;
@@ -124,6 +125,14 @@ class CaravanasController extends Controller
             }
             return response()->json(['error' => 'algo deu errado, tente novamente'], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function addParticipant(CaravanasParticipantesRequest $request){
+        try{
+            $this->caravansRepository->addUserToCaravan($request);
+        }catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

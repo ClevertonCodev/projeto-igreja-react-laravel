@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Caravanas;
+use App\Models\CaravanasParticipante;
 use App\Models\CaravanasVeiculos;
 use App\Models\TipoVeiculos;
 use App\Models\Veiculos;
@@ -157,7 +158,7 @@ class CaravanasRepository extends Repository
 
         $caravan = $this->findById($id);
         $conflicts = collect();
-        $registerVehicles = []; // Armazenará todos os veículos para anexar depois
+        $registerVehicles = []; 
 
         foreach ($vehicles as $vehicleId) {
             $vehicle = Veiculos::find($vehicleId);
@@ -166,7 +167,7 @@ class CaravanasRepository extends Repository
                 continue;
             }
 
-            // Verificar conflitos de horários com outras caravanas
+            
             $caravansConflicts = $vehicle->caravanas()
                 ->where('data_hora_retorno', '>', $caravan->data_hora_partida)
                 ->where('data_hora_partida', '<', $caravan->data_hora_retorno)
@@ -176,19 +177,19 @@ class CaravanasRepository extends Repository
                 $conflicts = $conflicts->merge($caravansConflicts);
             }
 
-            // Armazenar o veículo para anexar mais tarde
+            
             $registerVehicles[] = $vehicle->id; // Usar o ID do veículo
         }
 
-        // Se houver conflitos, lançar exceção
+        
         if ($conflicts->count() > 0) {
             throw new \LogicException('Um ou mais veículos estão em uso durante o mesmo intervalo de tempo', 404);
         }
 
-        // Anexar todos os veículos de uma vez
+        
         $caravan->veiculos()->attach($registerVehicles);
 
-        // Verificar se todos os veículos foram anexados corretamente
+        
         $vehiclesCaravan = $caravan->load('veiculos')->toArray();
         foreach ($vehicles as $vehicleId) {
             $found = false;
@@ -204,7 +205,7 @@ class CaravanasRepository extends Repository
             }
         }
 
-        return true; // Retorna verdadeiro se tudo estiver certo
+        return true; 
     }
 
     /**
@@ -221,5 +222,36 @@ class CaravanasRepository extends Repository
         }
         $caravan->veiculos()->detach();
         return $caravan->delete();
+    }
+
+    public function addUserToCaravan(object $attributes)
+    {
+        $currentCaravan = $this->findById($attributes->caravana_id);
+
+        $participantCaravans = CaravanasParticipante::where('user_id', $attributes->user_id)
+        ->where('caravana_id', '!=', $attributes->caravana_id)
+        ->with('caravanas')
+        ->get();
+
+        $departureDateCurrent =  Carbon::parse($currentCaravan->data_hora_partida);
+        $returnDateCurrent =  Carbon::parse($currentCaravan->data_hora_retorno);
+
+        foreach ($participantCaravans as $p) {
+             $departureDateParticipant =  Carbon::parse($p->caravanas->data_hora_partida);
+            $returnDateParticipant =  Carbon::parse($p->caravanas->data_hora_retorno);
+
+            if (
+                ($departureDateCurrent >=  $departureDateParticipant && $departureDateCurrent <= $returnDateParticipant) ||
+                ($returnDateCurrent >=  $departureDateParticipant && $returnDateCurrent <= $returnDateParticipant) ||
+                ($departureDateCurrent <=  $departureDateParticipant && $returnDateCurrent >= $returnDateParticipant)
+            ) {
+                
+                throw new \Exception('Um participante não pode participar de outra caravana no mesmo intevalo de dias', 409);
+            }
+        }
+        
+        $participant = CaravanasParticipante::create($attributes->toArray());
+    
+        return $participant;
     }
 }
