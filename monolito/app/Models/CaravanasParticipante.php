@@ -9,7 +9,7 @@ class CaravanasParticipante extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['caravana_id', 'user_id', 'funcao', 'status', 'data_confirmacao'];
+    protected $fillable = ['caravana_id', 'user_id', 'veiculo_id', 'funcao', 'status', 'data_confirmacao'];
 
     public function caravanas()
     {

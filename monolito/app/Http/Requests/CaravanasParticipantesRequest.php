@@ -29,6 +29,7 @@ class CaravanasParticipantesRequest extends FormRequest
             Rule::unique('caravanas_participantes')->where(function ($query) {
                 return $query->where('caravana_id', $this->caravana_id);
             }),
+            'veiculo_id' => 'required'
         ],        
             'funcao' => 'required',           
         ];
@@ -40,6 +41,7 @@ class CaravanasParticipantesRequest extends FormRequest
             'caravana_id.required' => 'A caravana é obrigatória.',
             'user_id.required' => 'O usuário é obrigatório.',
             'user_id.unique' => 'Esse usuário já está registrado nesta caravana.',
+            'veiculo_id' => 'O veiculo é obrigatório.',
             'funcao.required' => 'A função é obrigatória.',
         ];
     }
