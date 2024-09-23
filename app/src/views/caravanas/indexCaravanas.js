@@ -181,6 +181,9 @@ export default function IndexCaravanas({ navigation }) {
     const handleClickVeiculos = (id) => {
         navigation.navigate('Veiculos Caravanas', { id });
     }
+    const handleClickPassageiros = (idCaravana) => {
+        navigation.navigate('Participantes', { idCaravana });
+    }
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.itemContainer}
@@ -200,6 +203,9 @@ export default function IndexCaravanas({ navigation }) {
             </View>
             <View style={styles.row}>
                 <Botao title="Ver veiculos" onPress={() => handleClickVeiculos(item.id)} />
+            </View>
+            <View style={styles.row}>
+                <Botao title="Ver Passageiros" onPress={() => handleClickPassageiros(item.id)} />
                 <TouchableOpacity
                     onPress={() => handleDelete(item.id)}
                     style={styles.deleteIconContainer}

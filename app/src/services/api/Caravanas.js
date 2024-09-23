@@ -69,3 +69,8 @@ export const destroyVehiclesOfCaravan = async (id, caravanaId) => {
     const response = await api.delete(`/veiculos/remove_caravanas_veiculos/${id}/${caravanaId}`);
     return response.data;
 };
+
+export const addUserToCaravan = async (request) => {
+    const response = await api.post('/caravana-participante', request);
+    return response.data;
+}

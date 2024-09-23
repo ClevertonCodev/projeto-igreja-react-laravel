@@ -131,7 +131,17 @@ class CaravanasController extends Controller
 
     public function addParticipant(CaravanasParticipantesRequest $request){
         try{
-            $this->caravansRepository->addUserToCaravan($request);
+            $participant = $this->caravansRepository->addUserToCaravan($request);
+            return response()->json(['success' => $participant], Response::HTTP_OK);
+        }catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function listParticipant(Request $request, $id){
+        try{
+            $participant = $this->caravansRepository->listParticipantToCaravan($id);
+            return response()->json(['success' => $participant], Response::HTTP_OK);
         }catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

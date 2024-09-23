@@ -5,9 +5,8 @@ import InputSelect from '../../components/InputSelect';
 import InputDateTime from '../../components/inputDateTime';
 import InputSwitch from '../../components/InputSwitch';
 import { Formik } from 'formik';
-import { } from "../../services/api/caravanas";
 import { findAll as findAllUsers } from "../../services/api/Users";
-import { getVehiclesOfCaravan } from '../../services/api/Caravanas';
+import { getVehiclesOfCaravan, addUserToCaravan } from '../../services/api/Caravanas';
 import * as Yup from 'yup';
 import { useRoute } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,13 +16,13 @@ const validationSchema = Yup.object().shape({
         .string()
         .required("o veículo é obrigatório"),
     user_id: Yup.string().required("o usuário é obrigatório"),
-    funcao: Yup.number().required('A quantidade de passageiros é obrigatória').typeError('A quantidade de passageiros deve ser um número'),
+    funcao: Yup.string().required('A quantidade de passageiros é obrigatória'),
     data_confirmacao: Yup.string().required("a data de confimação é obrigatório"),
 });
 
-export default function CaravanaForm({ navigation }) {
+export default function AddPartipantesCaravanas({ navigation }) {
     const route = useRoute();
-    const { idCaravana } = route.params || {};
+    const { idCaravana, id } = route.params || {};
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -62,12 +61,26 @@ export default function CaravanaForm({ navigation }) {
     }, [users]);
 
     const optionsVeiculos = useCallback(() => {
-        return users.map((item) => ({
+
+        return veiculos.map((item) => ({
             value: item.id,
             label: item.nome,
         }));
+
     }, [veiculos]);
 
+    const optionsFunction = () => {
+        return [
+            {
+                value: 'passageiro',
+                label: 'Passageiro',
+            },
+            {
+                value: 'organizador',
+                label: 'Organizador',
+            }
+        ];
+    };
     const getUsers = async () => {
         setLoading(true);
         try {
@@ -86,8 +99,8 @@ export default function CaravanaForm({ navigation }) {
         setLoading(true);
         try {
             const response = await getVehiclesOfCaravan(idCaravana);
-            if (response.veiculos) {
-                setVeiculos(response.veiculos);
+            if (response.caravanas_veiculos) {
+                setVeiculos(response.caravanas_veiculos.veiculos);
             }
         } catch (error) {
             setError('Ocorreu um erro desconhecido ao carregar as users');
@@ -131,7 +144,7 @@ export default function CaravanaForm({ navigation }) {
 
     const created = async (values, resetForm) => {
         try {
-            const response = await create(values);
+            const response = await addUserToCaravan(values);
             if (response.success) {
                 setSuccess('Criado com sucesso!');
                 resetForm();
@@ -152,8 +165,7 @@ export default function CaravanaForm({ navigation }) {
                 setError(null);
                 const formattedValues = {
                     ...values,
-                    data_hora_partida: moment(values.data_hora_partida).format('YYYY-MM-DD HH:mm:ss'),
-                    data_hora_retorno: moment(values.data_hora_retorno).format('YYYY-MM-DD HH:mm:ss')
+                    data_confirmacao: moment(values.data_hora_partida).format('YYYY-MM-DD HH:mm:ss'),
                 };
                 if (id) {
                     await update(id, formattedValues);
@@ -167,10 +179,10 @@ export default function CaravanaForm({ navigation }) {
                     useCallback(() => {
                         getUsers();
                         getVeiculos();
-                        // if (id) {
-                        //     getOne(id, setValues);
-                        // }
-                    }, [idCaravana])
+                        if (id) {
+                            getOne(id, setValues);
+                        }
+                    }, [idCaravana, id])
                 );
 
                 return (
@@ -189,7 +201,7 @@ export default function CaravanaForm({ navigation }) {
                                 onValueChange={(itemValue) => {
                                     setValues({ ...values, veiculo_id: itemValue });
                                 }}
-                                items={options()}
+                                items={optionsVeiculos()}
                                 error={errors.veiculo_id}
                             />
                             {touched.veiculo_id && errors.veiculo_id && <Text style={styles.error}>{errors.veiculo_id}</Text>}
@@ -200,7 +212,7 @@ export default function CaravanaForm({ navigation }) {
                                 onValueChange={(itemValue) => {
                                     setValues({ ...values, user_id: itemValue });
                                 }}
-                                items={optionsUsers()}
+                                items={options()}
                                 error={errors.user_id}
                             />
                             {touched.user_id && errors.user_id && <Text style={styles.error}>{errors.user_id}</Text>}
@@ -227,7 +239,7 @@ export default function CaravanaForm({ navigation }) {
                             <InputSwitch
                                 value={values.status}
                                 onValueChange={(newValue) => setValues({ ...values, status: newValue })}
-                                label='Status da caravana'
+                                label='Passegeiro'
                             />
                         </View>
                     </FormPage>
